@@ -83,6 +83,26 @@ Check out a few resources that may come in handy when working with NestJS:
 - To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
 - Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
 
+## Migrations
+
+You can generate new migrations with changes from schema and DB with next command
+
+```bash
+npm run migration:generate --name=your_migration_name
+
+npm run migration:run
+```
+
+Or create new empty migration:
+
+```bash
+npm run migration:create --name=your_migration_name
+
+
+```
+
+They will be stored in src/migrations folder
+
 ## Support
 
 Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
