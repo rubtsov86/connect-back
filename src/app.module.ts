@@ -4,7 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import typeorm from './config/typeorm';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
-import { UserModule } from './user/user.module';
+import { CompanyModule } from './company/company.module';
 
 @Module({
   imports: [
@@ -31,7 +31,7 @@ import { UserModule } from './user/user.module';
         return typeOrmConfig;
       },
     }),
-    UserModule,
+    CompanyModule,
   ],
   controllers: [],
   providers: [],
