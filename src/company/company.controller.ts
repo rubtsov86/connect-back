@@ -6,19 +6,23 @@ import {
   Res,
   Req,
   UnauthorizedException,
+  UseGuards,
+  Get,
+  Param,
 } from '@nestjs/common';
 import { CompanyService } from './company.service';
+import { Company } from './company.entity';
 import { TokenService } from './token.service';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags, ApiCreatedResponse } from '@nestjs/swagger';
 import * as bcryptjs from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
-
-import { ICompany } from '../company/company.types';
-import { User } from '../company/company.decorator';
 
 import { Response, Request } from 'express';
 import { createCompanyReqDto } from './dto';
 import { MoreThanOrEqual } from 'typeorm';
+import { AuthGuard } from '../auth/auth.guard';
+import { IUser } from './user.types';
+import { User } from './company.decorator';
 
 @ApiTags('Company')
 @ApiBearerAuth()
@@ -68,7 +72,7 @@ export class CompanyController {
       },
       { expiresIn: '1d' },
     );
-    console.log('qwe');
+
     const refreshToken = await this.jwtService.signAsync({
       id: company.id,
     });
@@ -136,5 +140,29 @@ export class CompanyController {
     return {
       message: 'success',
     };
+  }
+
+  @Get('user')
+  @UseGuards(AuthGuard)
+  async user(@Req() request: Request, @User() user: IUser) {
+    try {
+      const { password, ...data } = (await this.companyService.findOne({
+        id: user.id,
+      })) as Company;
+
+      return data;
+    } catch (e) {
+      throw new UnauthorizedException('');
+    }
+  }
+
+  @Get('/:companyId')
+  @UseGuards(AuthGuard)
+  @ApiCreatedResponse({
+    description: 'The company',
+    type: Company,
+  })
+  async updateCompany(@Param('companyId') companyId: number) {
+    return this.companyService.findOne({ id: companyId });
   }
 }
