@@ -5,6 +5,7 @@ import typeorm from './config/typeorm';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { CompanyModule } from './company/company.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -30,6 +31,11 @@ import { CompanyModule } from './company/company.module';
 
         return typeOrmConfig;
       },
+    }),
+    JwtModule.register({
+      global: true,
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: '1w' },
     }),
     CompanyModule,
   ],

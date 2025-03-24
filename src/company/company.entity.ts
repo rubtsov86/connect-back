@@ -14,7 +14,7 @@ export class Company {
   @Column()
   name: string;
 
-  @Column()
+  @Column({ nullable: true })
   logoUrl: string;
 
   @Column()
