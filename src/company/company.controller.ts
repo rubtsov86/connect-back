@@ -13,7 +13,15 @@ import {
 import { CompanyService } from './company.service';
 import { Company } from './company.entity';
 import { TokenService } from './token.service';
-import { ApiBearerAuth, ApiTags, ApiCreatedResponse } from '@nestjs/swagger';
+import { Token } from './token.entity';
+import {
+  ApiBearerAuth,
+  ApiTags,
+  ApiCreatedResponse,
+  ApiBadRequestResponse,
+  ApiResponse,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import * as bcryptjs from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 
@@ -35,22 +43,32 @@ export class CompanyController {
   ) {}
 
   @Post('register')
+  @ApiCreatedResponse({
+    type: Company,
+  })
+  @ApiBadRequestResponse({ description: 'Password do not match!' })
   async register(@Body() body: createCompanyReqDto) {
     if (body.password !== body.password_confirm) {
       throw new BadRequestException('Password do not match!');
     }
 
+    const { password_confirm, ...data } = body;
     // crypt the password
     const cryptPassword = await bcryptjs.hash(body.password, 12);
-    const newCompany = Object.assign(body, {
+    const newCompany = Object.assign(data, {
       password: cryptPassword,
       isActive: true,
     });
 
-    return this.companyService.save(newCompany);
+    const { password, ...response } =
+      await this.companyService.save(newCompany);
+
+    return response;
   }
 
   @Post('login')
+  @ApiResponse({ status: 200, type: Token })
+  @ApiBadRequestResponse({ description: 'invalid credentials' })
   async login(
     @Body('email') email: string,
     @Body('password') password: string,
@@ -98,6 +116,8 @@ export class CompanyController {
   }
 
   @Post('refresh')
+  @ApiResponse({ status: 200, type: Token })
+  @ApiUnauthorizedResponse({ description: 'user is Unauthorized' })
   async refrech(
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
@@ -129,13 +149,14 @@ export class CompanyController {
   }
 
   @Post('logout')
+  @ApiResponse({ status: 200, description: 'success' })
   async logout(
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
     await this.tokenService.delete({ token: request.cookies['refresh_token'] });
 
-    response.clearCookie('refresh_token');
+    response.status(200).clearCookie('refresh_token');
 
     return {
       message: 'success',
@@ -143,6 +164,11 @@ export class CompanyController {
   }
 
   @Get('user')
+  @ApiResponse({
+    status: 200,
+    type: Company,
+  })
+  @ApiUnauthorizedResponse({ description: 'user is Unauthorized' })
   @UseGuards(AuthGuard)
   async user(@Req() request: Request, @User() user: IUser) {
     try {
@@ -152,7 +178,7 @@ export class CompanyController {
 
       return data;
     } catch (e) {
-      throw new UnauthorizedException('');
+      throw new UnauthorizedException('user is Unauthorized');
     }
   }
 
@@ -162,6 +188,7 @@ export class CompanyController {
     description: 'The company',
     type: Company,
   })
+  @ApiUnauthorizedResponse({ description: 'user is Unauthorized' })
   async updateCompany(@Param('companyId') companyId: number) {
     return this.companyService.findOne({ id: companyId });
   }

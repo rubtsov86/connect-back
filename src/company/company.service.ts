@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  forwardRef,
-  Inject,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Company } from '../company/company.entity';
@@ -15,11 +10,11 @@ export class CompanyService {
     private companyRepository: Repository<Company>,
   ) {}
 
-  async save(body: any) {
+  async save(body: Partial<Company>) {
     return this.companyRepository.save(body);
   }
 
-  async findOne(options: any) {
+  async findOne(options: Partial<Company>) {
     return this.companyRepository.findOne({
       where: options,
     });
